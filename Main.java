@@ -29,20 +29,29 @@ public class Cinema {
             if (input == 1) {
                 printCinema(cinema);
             } else if (input == 2) {
-                System.out.println("Enter a row number:");
-                int rowNumber = scanner.nextInt();
-                System.out.println("Enter a seat number in that row:");
-                int seatNumber = scanner.nextInt();
-                    if (rowNumber > cinema.length + 1 || seatNumber > cinema[0].length + 1) {
+                boolean loopWrecker = false;
+                while (!loopWrecker) {
+                    System.out.println("Enter a row number:");
+                    int rowNumber = scanner.nextInt();
+                    System.out.println("Enter a seat number in that row:");
+                    int seatNumber = scanner.nextInt();
+                    if (rowNumber > cinema.length || seatNumber > cinema[0].length) {
                         System.out.println("Wrong Input!");
                     } else {
-                        calculateSeatCost(rowNumber, rows, seats, revenue);
-                        sellSeat(cinema, rowNumber, seatNumber, seatsBought);
+                        if (cinema[rowNumber - 1][seatNumber - 1] == 'S') {
+                            cinema[rowNumber - 1][seatNumber - 1] = 'B';
+                            seatsBought++;
+                            loopWrecker = true;
+                            revenue = calculateSeatCost(rowNumber, rows, seats, revenue);
+                        } else {
+                            System.out.println("That ticket has already been purchased");
+                        }
                     }
+                }
             } else if (input == 3) {
                 System.out.println("Number of purchased tickets: " + seatsBought);
-                System.out.println("Percentage: " + percentage);
-                System.out.println("Current income: " + revenue);
+                calculatePercentage(seatsBought, rows, seats);
+                System.out.println("Current income: $" + revenue);
                 calculateIncome(rows, seats);
             } else if (input == 0) {
                 loopBreaker = true;
@@ -54,6 +63,8 @@ public class Cinema {
     }
 
     public static char[][] generateCinema(int rows, int seats) {
+
+
         char[][] cinema = new char[rows][seats];
 
         for (int i = 0; i < cinema.length; i++) {
@@ -75,9 +86,10 @@ public class Cinema {
         }
     }
 
-    public static void calculateSeatCost(int rowNumber, int rows, int seats, int revenue) {
+    public static int calculateSeatCost(int rowNumber, int rows, int seats, int revenue) {
         if (rows * seats <= 60) {
             System.out.println("Ticket price: $10");
+            revenue += 10;
         } else {
             int expensiveRows = (int) Math.floor(rows / 2);
             if (rowNumber <= expensiveRows) {
@@ -88,16 +100,21 @@ public class Cinema {
                 revenue += 8;
             }
         }
+
+        return revenue;
     }
 
-    public static char[][] sellSeat(char[][] cinema, int rowNumber, int seatNumber, int soldSeats) {
-        if(cinema[rowNumber - 1][seatNumber - 1] == 'S') {
-            cinema[rowNumber - 1][seatNumber - 1] = 'B';
-            soldSeats++;
+    public static void calculatePercentage (int seatsBought, int rows, int seats) {
+        double percentage;
+        double totalSeats = rows * seats;
+
+        if (seatsBought == 0) {
+            percentage = 0.00;
         } else {
-            System.out.println("This seat is taken");
+            percentage = seatsBought / totalSeats * 100;
         }
-        return cinema;
+
+        System.out.println("Percentage: " + String.format("%.2f", percentage) + "%");
     }
 
     public static void printCinema(char[][] input) {
